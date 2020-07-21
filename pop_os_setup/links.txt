@@ -1,0 +1,17 @@
+#random
+https://www.reddit.com/r/VFIO/comments/arg25i/issue_using_rtx_2070_for_passthrough/
+https://www.reddit.com/r/VFIO/comments/gft8pu/nvidia_gpu_unresponsive_after_failed_detach_from/
+https://www.reddit.com/r/VFIO/comments/b8wzoa/problems_removing_gpu_device_from_amdgpu_driver/
+
+#relevant
+https://github.com/bryansteiner/gpu-passthrough-tutorial#considerations
+https://www.reddit.com/r/VFIO/comments/9pc0j7/dynamically_bindingunbinding_an_nvidia_card_from/
+https://heiko-sieger.info/creating-a-windows-10-vm-on-the-amd-ryzen-9-3900x-using-qemu-4-0-and-vga-passthrough/
+
+#scripts
+https://www.reddit.com/r/VFIO/comments/7o4y41/need_some_help_unbinding_my_nvidia_gfx_from_host/
+https://www.reddit.com/r/VFIO/comments/906jpc/how_would_i_go_about_passing_my_gpu_back_to_the/
+
+#detach
+https://askubuntu.com/questions/1215199/kvm-pci-passthrough-unable-to-detach-nvidia-card-for-kernel-5-4-andabove
+
