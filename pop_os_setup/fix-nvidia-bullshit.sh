@@ -6,3 +6,12 @@ systemctl disable nvidia-persistenced
 sudo system76-power graphics integrated
 # run this idiot:
 # sudo system76-power graphics nvidia
+
+# goodbye mr gui
+sudo systemctl stop gdm
+
+# plz come back sir
+sudo systemctl start gdm
+
+# if you have running processes this didnt work lmao RIP
+nvidia-smi
