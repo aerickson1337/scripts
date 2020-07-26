@@ -1,0 +1,93 @@
+# pop_os 20.04 vfio setup
+
+hardware is a mirror of this basically: https://github.com/bryansteiner/gpu-passthrough-tutorial#considerations
+
+# this partly works but not fully for me.
+sudo kernelstub --add-options "amd_iommu=on"
+
+# had to use this instead and bind my GPU before boot
+sudo kernelstub --add-options "kvm.ignore_msrs=1 vfio-pci.ids=10de:1e84,10de:10f8,10de:1ad8,10de:1ad9"
+sudo kernelstub -o "amd_iommu=on amd_iommu=pt"
+# could be one command but cba
+
+# for some reason I CANNOT detach the card when bound to the nvidia driver
+# adding the vfio-pci bind to startup works for blacklisting here
+# as a note you wont be able to use the card unless you bind it manually
+# since I have two gpu's and this has been a mess so far I CBA to 
+# figure out a better way since the driver forces a restart when it's unbound "wrong"
+
+
+# used the pop_os 20.04 AMD install as base OS, then ran following commands
+# install driver for second GPU
+sudo apt-get install -y system76-driver-nvidia
+
+# install video codecs for twitch streams
+sudo apt-get install -y gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-plugins-good libavcodec-extra gstreamer1.0-libav chromium-codecs-ffmpeg-extra libdvd-pkg
+sudo dpkg-reconfigure libdvd-pkg
+
+# these next at some point
+sudo apt install -y libvirt-daemon-system libvirt-clients qemu-kvm qemu-utils virt-manager ovmf
+
+###
+# You can install these but DO NOT follow bryans guide for attach/detach hooks
+# these are still useful for setting huge pages and the other tweaks
+# if you install hooks and have the crash -> reboot to fix you will regret
+# the hooks in the guide
+###
+#install qemu shit
+sudo wget 'https://raw.githubusercontent.com/PassthroughPOST/VFIO-Tools/master/libvirt_hooks/qemu' \
+     -O /etc/libvirt/hooks/qemu
+sudo chmod +x /etc/libvirt/hooks/qemu
+
+# restart qemu shit
+sudo service libvirtd restart
+
+# nvidia driver binds aggressively to X11/gdm, once it does that you can't detach it
+# you can see if it's bound with: nvidia-smi
+# to disable it run the following
+#stop it now
+#systemctl stop nvidia-persistenced
+#stop it forever
+#systemctl disable nvidia-persistenced
+
+#unbind nvidia card from X11
+# this is meant for laptops and system76 computers,
+# but also works for detaching it from X11
+sudo system76-power graphics integrated
+
+#restart to free nvidia card from X11
+sudo systemctl restart gdm
+
+# can reattach card with 
+sudo system76-power graphics nvidia
+
+# last fuck me note
+if you install windows on your passthrough SSD and use BIOS mode to test,
+it will not boot in UEFI/OVMF mode because it installs test windows as an
+MBR/NTFS filesystem and that autofails the UEFI install since it's not
+compatible with MBR. If you wipe the disk with all 0's that should fix it.
+I still had issues after this and had to do the following to fix it...
+
+install windows with seabios ssd/m.2 passthrough in MBR/NTFS install mode.
+after install completes go back into the filesystem and convert it to GPT/UEFI
+to do that open the command line in the windows installer then:
+chdir ..
+chdir Windows
+chdir System32
+mbr2gpt /validate /allowFullOS
+mbr2gpt /convert /allowFullOS
+exit and shutdown vm
+# this converts your MBR/NTFS windows to GPT/NTFS
+
+MAKE A NEW VM THAT MIRRORS YOUR FIRST ONE AND INSTEAD OF BIOS SET IT TO OVMF
+this should just boot into the windows you just setup.
+
+# I have no idea why I had to do this work around, even after wiping my drive
+# to zero's via gparted, dev zero dumps, etc. this was the only thing that "worked"
+# for getting win10 installed and working on a UEFI/GPT windows install... lol
+
+# Everything else in the guide works well, but do not use hooks unless you can
+# figure out how to bind/rebind your nvidia card without locking it and forcing
+# a reboot. I've tried to manually bind and unbind before did forcebinding with
+# kernelstub and had no luck. 
+
